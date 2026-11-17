@@ -1,0 +1,107 @@
+.atomi-editor {
+  --atomi-ink: #252d27;
+  --atomi-subtle: #565f58;
+  --atomi-line: #d8dfd8;
+  --atomi-accent: #23634c;
+  --atomi-tint: #eef5ef;
+  background: #fff;
+  border: 1px solid var(--atomi-line);
+  border-radius: 14px;
+  color: var(--atomi-ink);
+  font: 1rem/1.65 "Instrument Sans", system-ui, sans-serif;
+  min-width: 0;
+}
+.atomi-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem;
+  padding: .65rem;
+  border-radius: 13px 13px 0 0;
+  border-bottom: 1px solid var(--atomi-line);
+  background: #fafbf9;
+}
+.atomi-toolbar[hidden] { display: none; }
+.atomi-toolbar button, .atomi-actions button {
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: .35rem .6rem;
+  background: transparent;
+  color: inherit;
+  font: 600 .82rem/1.35 "Instrument Sans", system-ui, sans-serif;
+  min-height: 34px;
+  min-width: 34px;
+  cursor: pointer;
+}
+.atomi-toolbar button:disabled { color: var(--atomi-subtle); opacity: .55; cursor: default; }
+.atomi-toolbar button:not(:disabled):hover,
+.atomi-toolbar button[aria-pressed="true"],
+.atomi-actions button:hover { background: var(--atomi-tint); color: var(--atomi-accent); }
+.atomi-editor :focus-visible { outline: 2px solid var(--atomi-accent); outline-offset: 2px; }
+.atomi-editor .ProseMirror {
+  min-height: var(--atomi-min-height, 12rem);
+  padding: clamp(1rem, 3vw, 2rem);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  position: relative;
+  overflow-x: auto;
+}
+.atomi-editor .ProseMirror:focus-visible { outline-offset: -3px; }
+.atomi-editor .ProseMirror > :first-child { margin-top: 0; }
+.atomi-editor .ProseMirror > :last-child { margin-bottom: 0; }
+.atomi-editor .ProseMirror a { color: var(--atomi-accent); text-decoration: underline; }
+.atomi-editor .ProseMirror img { max-width: 100%; height: auto; }
+.atomi-editor .ProseMirror pre {
+  background: var(--atomi-tint);
+  padding: 1rem;
+  white-space: pre-wrap;
+  border-radius: 6px;
+}
+.atomi-editor .ProseMirror blockquote {
+  border-inline-start: 3px solid var(--atomi-line);
+  margin-inline: 0;
+  padding-inline: 1rem;
+}
+.atomi-editor .ProseMirror table { border-collapse: collapse; width: 100%; }
+.atomi-editor .ProseMirror :is(td, th) {
+  border: 1px solid var(--atomi-line);
+  padding: .45rem .65rem;
+  min-width: 3rem;
+}
+.atomi-editor .ProseMirror th { background: var(--atomi-tint); text-align: start; }
+.atomi-editor .ProseMirror :is(td, th) p { margin: 0; }
+.atomi-editor .ProseMirror .selectedCell { background: #dbeee0; }
+.atomi-editor .ProseMirror-selectednode { outline: 2px solid var(--atomi-accent); }
+.atomi-form {
+  display: grid;
+  gap: .75rem;
+  padding: 1rem;
+  border-bottom: 1px solid var(--atomi-line);
+  background: var(--atomi-tint);
+}
+.atomi-form label { display: grid; gap: .25rem; font-size: .875rem; font-weight: 600; }
+.atomi-form :is(input, textarea) {
+  border: 1px solid var(--atomi-line);
+  border-radius: 6px;
+  padding: .45rem .65rem;
+  color: inherit;
+  background: #fff;
+  font: inherit;
+  font-weight: 400;
+  min-width: 0;
+}
+.atomi-form textarea {
+  min-height: min(42vh, 24rem);
+  resize: vertical;
+  font: .9rem/1.55 "IBM Plex Mono", monospace;
+}
+.atomi-form [role="alert"] { color: #922c24; font-size: .875rem; }
+.atomi-form [role="alert"]:empty { display: none; }
+.atomi-actions { display: flex; gap: .35rem; justify-content: flex-end; }
+.atomi-actions button[type="submit"], .atomi-actions button:not([type]) {
+  background: var(--atomi-accent);
+  color: #fff;
+}
+.atomi-editor .ProseMirror { white-space: break-spaces; }
+.atomi-editor .ProseMirror-hideselection { caret-color: transparent; }
+.atomi-editor .ProseMirror-hideselection *::selection { background: transparent; }
+.atomi-editor img.ProseMirror-separator { display: inline !important; border: 0 !important; margin: 0 !important; }

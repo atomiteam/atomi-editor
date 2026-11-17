@@ -1,0 +1,15 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: #f5f6f0;
+  color: #252d27;
+  font: 1rem/1.5 "Instrument Sans", system-ui, sans-serif;
+}
+main { width: min(100% - 2rem, 66rem); margin: 3rem auto; }
+header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; }
+h1 { font: 400 clamp(2.6rem, 6vw, 4.5rem)/1 "Instrument Serif", Georgia, serif; margin: 0; letter-spacing: -.03em; }
+#toggle-html { background: #fff; border: 1px solid #cbd4ca; border-radius: 8px; padding: .55rem .8rem; font: inherit; color: inherit; cursor: pointer; }
+#output-panel { margin-top: 1.25rem; }
+#output-panel h2 { font-size: 1rem; }
+#output { white-space: pre-wrap; overflow-wrap: anywhere; background: #fff; border: 1px solid #d8dfd8; padding: 1rem; border-radius: 10px; }
+#editor { --atomi-min-height: 24rem; box-shadow: 0 15px 40px #273b2c0c; }

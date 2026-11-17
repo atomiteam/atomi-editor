@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Atomi Editor</title>
+  <link rel="stylesheet" href="/dist/style.css">
+  <link rel="stylesheet" href="/demo/demo.css">
+  <script src="/dist/browser/full.js" defer></script>
+  <script src="/demo/demo.js" defer></script>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Atomi Editor</h1>
+      <button id="toggle-html" type="button" aria-expanded="false" aria-controls="output-panel">View HTML</button>
+    </header>
+    <div id="editor"></div>
+    <section id="output-panel" hidden>
+      <h2>HTML output</h2>
+      <pre id="output"></pre>
+    </section>
+  </main>
+</body>
+</html>
