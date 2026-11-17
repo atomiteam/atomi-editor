@@ -72,7 +72,7 @@ export class Editor {
   readonly #translate: (label: string) => string
   readonly #onChange?: EditorOptions['onChange']
   #readOnly: boolean
-  #form?: HTMLDivElement
+  #form?: HTMLDialogElement
   #destroyed = false
 
   constructor(host: HTMLElement, options: EditorOptions = {}) {
@@ -193,9 +193,8 @@ export class Editor {
     submit: (values: Readonly<Record<string, string>>) => string | void,
   ): void {
     if (this.#readOnly || this.#form) return
-    const form = this.#document.createElement('div')
+    const form = this.#document.createElement('dialog')
     form.className = 'atomi-form'
-    form.setAttribute('role', 'group')
     form.setAttribute('aria-label', this.#translate(title))
     const heading = this.#document.createElement('strong')
     heading.textContent = this.#translate(title)
@@ -228,6 +227,11 @@ export class Editor {
       this.focus()
     }
     cancel.addEventListener('click', dismiss)
+    form.addEventListener('cancel', event => {
+      event.preventDefault()
+      event.stopPropagation()
+      dismiss()
+    })
     const submitFields = () => {
       const values = Object.fromEntries([...inputs].map(([name, input]) => [name, input.value]))
       const message = submit(values)
@@ -237,11 +241,7 @@ export class Editor {
     apply.addEventListener('click', submitFields)
     form.addEventListener('keydown', event => {
       if (event.isComposing) return
-      if (event.key === 'Escape') {
-        event.preventDefault()
-        event.stopPropagation()
-        dismiss()
-      } else if (event.key === 'Enter' && (event.target as HTMLElement).tagName === 'INPUT') {
+      if (event.key === 'Enter' && (event.target as HTMLElement).tagName === 'INPUT') {
         event.preventDefault()
         submitFields()
       }
@@ -249,22 +249,26 @@ export class Editor {
     actions.append(cancel, apply)
     form.append(error, actions)
     this.#form = form
-    this.#toolbar.after(form)
+    this.#root.append(form)
     this.view.updateState(this.view.state)
     this.#refresh()
     const firstInput = inputs.values().next().value ?? apply
+    firstInput.autofocus = true
+    form.showModal()
     firstInput.focus()
   }
 
   destroy(): void {
     if (this.#destroyed) return
     this.#destroyed = true
+    this.#closeForm()
     this.view.destroy()
     this.#root.remove()
   }
 
   #closeForm(): void {
     if (!this.#form) return
+    this.#form.close()
     this.#form.remove()
     this.#form = undefined
     this.view.updateState(this.view.state)

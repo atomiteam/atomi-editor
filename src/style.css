@@ -72,12 +72,23 @@
 .atomi-editor .ProseMirror .selectedCell { background: #dbeee0; }
 .atomi-editor .ProseMirror-selectednode { outline: 2px solid var(--atomi-accent); }
 .atomi-form {
-  display: grid;
-  gap: .75rem;
+  box-sizing: border-box;
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(30rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  overflow: auto;
   padding: 1rem;
-  border-bottom: 1px solid var(--atomi-line);
-  background: var(--atomi-tint);
+  border: 1px solid var(--atomi-line);
+  border-radius: 12px;
+  background: #fffefb;
+  color: var(--atomi-ink);
+  box-shadow: 0 12px 40px #252d2730;
 }
+.atomi-form[open] { display: grid; gap: .75rem; }
+.atomi-form:has(textarea) { width: min(54rem, calc(100vw - 2rem)); }
+.atomi-form::backdrop { background: #252d2738; }
 .atomi-form label { display: grid; gap: .25rem; font-size: .875rem; font-weight: 600; }
 .atomi-form :is(input, textarea) {
   border: 1px solid var(--atomi-line);
