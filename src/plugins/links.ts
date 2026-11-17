@@ -7,6 +7,7 @@ function linkRange(state: EditorState) {
   const type = state.schema.marks.link
   const mark = type.isInSet($from.marks())
     ?? type.isInSet($from.nodeAfter?.marks ?? [])
+    ?? (empty ? type.isInSet($from.nodeBefore?.marks ?? []) : undefined)
   if (!empty || !mark) return { from, to, href: mark?.attrs.href as string | undefined }
   let start = from
   let end = from
