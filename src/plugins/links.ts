@@ -44,24 +44,26 @@ export function createLinks(validateURL: (value: string) => string | undefined):
         {
           label: 'Link',
           action(editor) {
-            const { from, to, href } = linkRange(editor.view.state)
+            const { state } = editor.view
+            const { from, to, href } = linkRange(state)
+            const originalText = state.doc.textBetween(from, to, ' ')
             editor.openForm('Link', [
               { name: 'url', label: 'URL', value: href },
-              ...(from === to ? [{ name: 'text', label: 'Link text' }] : []),
+              { name: 'text', label: 'Link text', value: originalText },
             ], values => {
               const url = validateURL(values.url)
               if (!url) return 'Enter a valid URL.'
               const { state } = editor.view
               const transaction = state.tr
               const mark = marks.link.create({ href: url })
-              if (from === to) {
-                const text = values.text.trim() || url
-                transaction.replaceSelectionWith(state.schema.text(text, [mark]), false)
-                transaction.removeStoredMark(marks.link)
-              } else {
+              const text = values.text.trim() || url
+              if (from !== to && values.text === originalText && originalText) {
                 transaction.addMark(from, to, mark)
+              } else {
+                const existing = state.doc.resolve(from).marks()
+                transaction.replaceWith(from, to, state.schema.text(text, mark.addToSet(existing)))
               }
-              editor.view.dispatch(transaction.scrollIntoView())
+              editor.view.dispatch(transaction.removeStoredMark(marks.link).scrollIntoView())
             })
           },
         },
