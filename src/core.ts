@@ -30,6 +30,7 @@ export interface EditorOptions {
   plugins?: readonly EditorPlugin[]
   readOnly?: boolean
   label?: string
+  translate?: (label: string) => string
   onChange?: (html: string) => void
 }
 
@@ -68,15 +69,17 @@ export class Editor {
   readonly #buttons: Array<{ button: HTMLButtonElement; item: ToolbarItem }> = []
   readonly #plugins: Plugin[]
   readonly #normalizers: Array<(state: EditorState) => Transaction | undefined>
+  readonly #translate: (label: string) => string
   readonly #onChange?: EditorOptions['onChange']
   #readOnly: boolean
-  #form?: HTMLFormElement
+  #form?: HTMLDivElement
   #destroyed = false
 
   constructor(host: HTMLElement, options: EditorOptions = {}) {
     this.#document = host.ownerDocument
     this.#readOnly = options.readOnly ?? false
     this.#onChange = options.onChange
+    this.#translate = options.translate ?? (label => label)
     const schemaNodes = { ...nodes }
     const schemaMarks: Record<string, MarkSpec> = Object.create(null)
     const names = new Set<string>()
@@ -108,7 +111,7 @@ export class Editor {
     this.#toolbar = this.#document.createElement('div')
     this.#toolbar.className = 'atomi-toolbar'
     this.#toolbar.setAttribute('role', 'group')
-    this.#toolbar.setAttribute('aria-label', 'Formatting')
+    this.#toolbar.setAttribute('aria-label', this.#translate('Formatting'))
     this.#root.append(this.#toolbar)
     this.view = new EditorView(this.#root, {
       state: this.#stateFromHTML(options.html ?? ''),
@@ -190,16 +193,17 @@ export class Editor {
     submit: (values: Readonly<Record<string, string>>) => string | void,
   ): void {
     if (this.#readOnly || this.#form) return
-    const form = this.#document.createElement('form')
+    const form = this.#document.createElement('div')
     form.className = 'atomi-form'
-    form.setAttribute('aria-label', title)
+    form.setAttribute('role', 'group')
+    form.setAttribute('aria-label', this.#translate(title))
     const heading = this.#document.createElement('strong')
-    heading.textContent = title
+    heading.textContent = this.#translate(title)
     form.append(heading)
     const inputs = new Map<string, HTMLInputElement | HTMLTextAreaElement>()
     for (const field of fields) {
       const label = this.#document.createElement('label')
-      label.textContent = field.label
+      label.textContent = this.#translate(field.label)
       const input = field.multiline
         ? this.#document.createElement('textarea')
         : this.#document.createElement('input')
@@ -214,28 +218,33 @@ export class Editor {
     const actions = this.#document.createElement('div')
     actions.className = 'atomi-actions'
     const apply = this.#document.createElement('button')
-    apply.type = 'submit'
-    apply.textContent = 'Apply'
+    apply.type = 'button'
+    apply.textContent = this.#translate('Apply')
     const cancel = this.#document.createElement('button')
     cancel.type = 'button'
-    cancel.textContent = 'Cancel'
+    cancel.textContent = this.#translate('Cancel')
     const dismiss = () => {
       this.#closeForm()
       this.focus()
     }
     cancel.addEventListener('click', dismiss)
-    form.addEventListener('keydown', event => {
-      if (event.key === 'Escape') {
-        event.preventDefault()
-        dismiss()
-      }
-    })
-    form.addEventListener('submit', event => {
-      event.preventDefault()
+    const submitFields = () => {
       const values = Object.fromEntries([...inputs].map(([name, input]) => [name, input.value]))
       const message = submit(values)
-      if (message) error.textContent = message
+      if (message) error.textContent = this.#translate(message)
       else dismiss()
+    }
+    apply.addEventListener('click', submitFields)
+    form.addEventListener('keydown', event => {
+      if (event.isComposing) return
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        event.stopPropagation()
+        dismiss()
+      } else if (event.key === 'Enter' && (event.target as HTMLElement).tagName === 'INPUT') {
+        event.preventDefault()
+        submitFields()
+      }
     })
     actions.append(cancel, apply)
     form.append(error, actions)
@@ -287,9 +296,10 @@ export class Editor {
   #addButton(item: ToolbarItem): void {
     const button = this.#document.createElement('button')
     button.type = 'button'
-    button.textContent = item.icon ?? item.label
-    button.title = item.label
-    button.setAttribute('aria-label', item.label)
+    const label = this.#translate(item.label)
+    button.textContent = item.icon ? this.#translate(item.icon) : label
+    button.title = label
+    button.setAttribute('aria-label', label)
     button.addEventListener('mousedown', event => event.preventDefault())
     button.addEventListener('click', () => {
       if (item.command) this.run(item.command)

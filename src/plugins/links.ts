@@ -23,56 +23,59 @@ function linkRange(state: EditorState) {
   return { from: start, to: end, href: mark.attrs.href as string }
 }
 
-export const links: EditorPlugin = {
-  name: 'links',
-  marks: {
-    link: {
-      attrs: { href: {} }, inclusive: false,
-      parseDOM: [{
-        tag: 'a[href]',
-        getAttrs: element => {
-          const href = safeURL(element.getAttribute('href') ?? '', linkProtocols)
-          return href ? { href } : false
-        },
-      }],
-      toDOM: mark => ['a', { href: safeURL(String(mark.attrs.href), linkProtocols) }, 0],
+export function createLinks(validateURL: (value: string) => string | undefined): EditorPlugin {
+  return {
+    name: 'links',
+    marks: {
+      link: {
+        attrs: { href: {} }, inclusive: false,
+        parseDOM: [{
+          tag: 'a[href]',
+          getAttrs: element => {
+            const href = validateURL(element.getAttribute('href') ?? '')
+            return href ? { href } : false
+          },
+        }],
+        toDOM: mark => ['a', { href: validateURL(String(mark.attrs.href)) }, 0],
+      },
     },
-  },
-  setup: ({ marks }) => ({
-    toolbar: [
-      {
-        label: 'Link',
-        action(editor) {
-          const { from, to, href } = linkRange(editor.view.state)
-          editor.openForm('Link', [
-            { name: 'url', label: 'URL', value: href },
-            ...(from === to ? [{ name: 'text', label: 'Link text' }] : []),
-          ], values => {
-            const url = safeURL(values.url, linkProtocols)
-            if (!url) return 'Enter a valid URL.'
-            const { state } = editor.view
-            const transaction = state.tr
-            const mark = marks.link.create({ href: url })
-            if (from === to) {
-              const text = values.text.trim() || url
-              transaction.replaceSelectionWith(state.schema.text(text, [mark]), false)
-              transaction.removeStoredMark(marks.link)
-            } else {
-              transaction.addMark(from, to, mark)
-            }
-            editor.view.dispatch(transaction.scrollIntoView())
-          })
+    setup: ({ marks }) => ({
+      toolbar: [
+        {
+          label: 'Link',
+          action(editor) {
+            const { from, to, href } = linkRange(editor.view.state)
+            editor.openForm('Link', [
+              { name: 'url', label: 'URL', value: href },
+              ...(from === to ? [{ name: 'text', label: 'Link text' }] : []),
+            ], values => {
+              const url = validateURL(values.url)
+              if (!url) return 'Enter a valid URL.'
+              const { state } = editor.view
+              const transaction = state.tr
+              const mark = marks.link.create({ href: url })
+              if (from === to) {
+                const text = values.text.trim() || url
+                transaction.replaceSelectionWith(state.schema.text(text, [mark]), false)
+                transaction.removeStoredMark(marks.link)
+              } else {
+                transaction.addMark(from, to, mark)
+              }
+              editor.view.dispatch(transaction.scrollIntoView())
+            })
+          },
         },
-      },
-      {
-        label: 'Remove link', icon: 'Unlink',
-        command(state, dispatch) {
-          const { from, to } = linkRange(state)
-          if (!state.doc.rangeHasMark(from, to, marks.link)) return false
-          dispatch?.(state.tr.removeMark(from, to, marks.link).removeStoredMark(marks.link))
-          return true
+        {
+          label: 'Remove link', icon: 'Unlink',
+          command(state, dispatch) {
+            const { from, to } = linkRange(state)
+            if (!state.doc.rangeHasMark(from, to, marks.link)) return false
+            dispatch?.(state.tr.removeMark(from, to, marks.link).removeStoredMark(marks.link))
+            return true
+          },
         },
-      },
-    ],
-  }),
+      ],
+    }),
+  }
 }
+export const links = createLinks(value => safeURL(value, linkProtocols))

@@ -97,7 +97,7 @@
 .atomi-form [role="alert"] { color: #922c24; font-size: .875rem; }
 .atomi-form [role="alert"]:empty { display: none; }
 .atomi-actions { display: flex; gap: .35rem; justify-content: flex-end; }
-.atomi-actions button[type="submit"], .atomi-actions button:not([type]) {
+.atomi-actions button:last-child {
   background: var(--atomi-accent);
   color: #fff;
 }
